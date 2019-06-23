@@ -1,34 +1,59 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import 'antd/dist/antd.css'
-import { Input, Button, List } from 'antd'
-
-
-const data = [
-    'Racing car sprays burning fuel into crowd.',
-    'Japanese princess to wed commoner.',
-    'Australian walks 100km after outback crash.',
-    'Man charged over missing wedding girl.',
-    'Los Angeles battles huge wildfires.',
-];
+import store from './store/index'
+import { getInputChangeAction, getAddItemAction, getDeleteItemAction} from './store/actionCreators'
+import TodoListUI from './TodoListUI'
+import axios from 'axios'
 
 class TodoList extends Component{
 
+    constructor(props) {
+        super(props)
+        this.state = store.getState()
+        this.handleInputChange = this.handleInputChange.bind(this)
+        this.handleStoreChange = this.handleStoreChange.bind(this)
+        this.handleBtnClick = this.handleBtnClick.bind(this)
+        this.handleItemClick = this.handleItemClick.bind(this)
+        store.subscribe(this.handleStoreChange)
+        // console.log(store.getState())
+    }
+
     render () {
         return (
-            <div style={{marginTop: '10px', marginLeft: '10px'}}>
-                <div>
-                    <Input placeholder='todo list' style={{width: 300, marginRight: '10px'}}/>
-                    <Button type="primary">提交</Button>
-                </div>
-                <List
-                    style={{marginTop: '10px', width: '300px'}}
-                    bordered
-                    dataSource={data}
-                    renderItem={item => <List.Item>{item}</List.Item>}
-                />
-            </div>
+            <TodoListUI
+                inputValue={this.state.inputValue}
+                list={this.state.list}
+                handleInputChange={this.handleInputChange}
+                handleBtnClick={this.handleBtnClick}
+                handleItemClick={this.handleItemClick}
+            />
         )
     }
+
+    componentDidMount () {
+        axios.get('/src/list.json').then(() => {
+
+        })
+    }
+
+    handleInputChange(e) {
+        const action = getInputChangeAction(e.target.value)
+        //console.log(action)
+        store.dispatch(action)
+    }
+    handleStoreChange() {
+        this.setState(store.getState())
+    }
+    handleBtnClick() {
+        const action = getAddItemAction()
+        store.dispatch(action)
+    }
+    handleItemClick(index) {
+        console.log(index)
+        const action = getDeleteItemAction(index)
+        store.dispatch(action)
+    }
+
 }
 
 export default TodoList
